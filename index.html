@@ -2,392 +2,582 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lịch Học Sinh Viên - Cố Định Khung Giờ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    <title>Lịch học - UTH</title>
+        body {
+            background-color: #0f6868;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-    <link rel="stylesheet" href="style.css">
+        .phone-container {
+            width: 100%;
+            max-width: 414px;
+            height: 100vh;
+            max-height: 896px;
+            background-color: #0d6262;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 480px) {
+            .phone-container { height: 100vh; max-height: none; border-radius: 0; }
+        }
+
+        /* Header Cá Nhân */
+        .user-header {
+            padding: 30px 20px 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 12px; }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8);
+            background-color: #eee;
+        }
+
+        .user-text h2 { font-size: 14px; font-weight: 700; line-height: 1.2; }
+        .user-text p { font-size: 11px; opacity: 0.85; margin-top: 3px; }
+
+        .header-actions {
+            display: flex; gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 5px 10px; border-radius: 12px;
+        }
+
+        .header-btn { background: none; border: none; color: white; font-size: 15px; cursor: pointer; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background-color: #ffffff;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 16px 16px 10px 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .month-title span { display: block; font-size: 12px; color: #888; }
+        .month-title-row { display: flex; align-items: center; gap: 8px; }
+        .month-title h2 { font-size: 20px; font-weight: 800; color: #103838; }
+
+        .nav-arrow {
+            background: #e8f3f3;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            color: #0f6868;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .quick-btns { display: flex; gap: 6px; }
+
+        .btn-pill {
+            background: #f0f4f4;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Swipe Container */
+        .calendar-slider {
+            display: flex;
+            width: 300%;
+            transition: transform 0.3s ease-out;
+            height: 100%;
+        }
+
+        .month-view {
+            width: 33.333%;
+            flex-shrink: 0;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+
+        .day-header {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            padding-bottom: 8px;
+        }
+
+        .day-cell {
+            min-height: 62px;
+            padding: 3px 1px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .day-num {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-bottom: 3px;
+        }
+
+        .other-month { color: #ccc; }
+
+        .day-cell.selected { background-color: #e8f3f3; }
+        .day-cell.selected .day-num { background-color: #0f5252; color: white; }
+
+        .badge-subject {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 3px;
+            border-radius: 4px;
+            width: 95%;
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        .badge-pink { background-color: #fde8ec; color: #e54260; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            height: 56px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: #888;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .nav-item.active { color: #0f6868; font-weight: bold; }
+        .nav-item.active::after {
+            content: ''; position: absolute; top: -8px; width: 20px; height: 3px; background-color: #0f6868; border-radius: 2px;
+        }
+
+        .nav-icon { font-size: 16px; margin-bottom: 2px; }
+
+        .home-indicator { height: 10px; background: white; display: flex; justify-content: center; align-items: center; }
+        .home-bar { width: 120px; height: 4px; background-color: #000; border-radius: 2px; }
+
+        /* Bottom Sheet Popup */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            justify-content: flex-end;
+            flex-direction: column;
+            z-index: 999;
+        }
+
+        .bottom-sheet {
+            background: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px;
+            max-height: 75%;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .sheet-title { font-size: 14px; font-weight: 700; color: #111; }
+        .close-btn { background: #f0f0f0; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; color: #666; cursor: pointer; }
+
+        .timeline-item { position: relative; padding-left: 18px; padding-bottom: 18px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-item::before { content: ''; position: absolute; left: 3px; top: 8px; bottom: -8px; width: 2px; background-color: #0f6868; }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-dot { position: absolute; left: 0px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: white; border: 2px solid #0f6868; }
+
+        .subject-header-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .subject-title { font-size: 13px; font-weight: 700; color: #222; }
+        .subject-time-badge { font-size: 11px; color: #555; font-weight: 600; }
+        .subject-detail { font-size: 11px; color: #444; line-height: 1.5; }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
 </head>
-
 <body>
 
-    <!-- ================= HEADER ================= -->
-    <header class="header">
-
-        <!-- Nút menu -->
-        <div class="menu-icon">
-            ☰
-        </div>
-
-        <!-- Logo -->
-        <div class="logo">
-            <div class="uth-logo">UTH</div>
-
-            <div class="university-name">
-                UNIVERSITY<br>
-                <span>OF TRANSPORT</span><br>
-                HO CHI MINH CITY
+<div class="phone-container">
+    <!-- Header Cá Nhân -->
+    <div class="user-header">
+        <div class="user-info">
+            <img class="avatar" src="my_photo.jpg" alt="Avatar">
+            <div class="user-text">
+                <h2>Chào, NGUYỄN VÕ<br>QUỲNH ĐƯỢC</h2>
+                <p>MSSV: 082206009969 (Đại học - chính quy)</p>
             </div>
         </div>
+        <div class="header-actions">
+            <button class="header-btn">📷</button>
+            <span style="opacity: 0.3;">|</span>
+            <button class="header-btn">🔔</button>
+        </div>
+    </div>
 
-        <!-- Thông tin sinh viên -->
-        <div class="student">
-
-            <div class="avatar">
-                N
+    <!-- Main Content -->
+    <div class="main-content" id="swipeArea">
+        <div class="calendar-controls">
+            <div class="month-title">
+                <span>Năm 2026</span>
+                <div class="month-title-row">
+                    <button class="nav-arrow" onclick="prevMonth()">&lt;</button>
+                    <h2 id="currentMonthText">Tháng 10</h2>
+                    <button class="nav-arrow" onclick="nextMonth()">&gt;</button>
+                </div>
             </div>
-
-            <span class="student-name">
-                Nguyễn Võ Quỳnh Được
-            </span>
-
-            <span class="arrow-down">
-                ▼
-            </span>
-
+            <div class="quick-btns">
+                <button class="btn-pill">Ngày chọn: <strong id="selectedDayCount">02 Môn</strong> 📅</button>
+                <button class="btn-pill">Tháng: <strong id="totalMonthCount">52 Buổi</strong> 🧭</button>
+            </div>
         </div>
 
-    </header>
+        <!-- Khung Slider 3 Tháng -->
+        <div class="calendar-slider" id="calendarSlider">
+            
+            <!-- THÁNG 10/2026 -->
+            <div class="month-view">
+                <div class="calendar-grid">
+                    <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div><div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div><div class="day-header">CN</div>
+                    
+                    <div class="day-cell other-month"><span class="day-num">28</span></div>
+                    <div class="day-cell other-month"><span class="day-num">29</span></div>
+                    <div class="day-cell other-month"><span class="day-num">30</span></div>
+                    
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '01/10/2026')"><span class="day-num">1</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '02/10/2026')"><span class="day-num">2</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '03/10/2026')"><span class="day-num">3</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">4</span></div>
 
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '05/10/2026')"><span class="day-num">5</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '06/10/2026')"><span class="day-num">6</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '07/10/2026')"><span class="day-num">7</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell selected" onclick="selectAndOpen(this, 'Thứ Năm', '08/10/2026')"><span class="day-num">8</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '09/10/2026')"><span class="day-num">9</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '10/10/2026')"><span class="day-num">10</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">11</span></div>
 
-    <!-- ================= NỘI DUNG ================= -->
-    <main class="container">
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '12/10/2026')"><span class="day-num">12</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '13/10/2026')"><span class="day-num">13</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '14/10/2026')"><span class="day-num">14</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '15/10/2026')"><span class="day-num">15</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '16/10/2026')"><span class="day-num">16</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '17/10/2026')"><span class="day-num">17</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">18</span></div>
 
-        <!-- Thanh chọn ngày -->
-        <div class="top-bar">
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '19/10/2026')"><span class="day-num">19</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '20/10/2026')"><span class="day-num">20</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '21/10/2026')"><span class="day-num">21</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '22/10/2026')"><span class="day-num">22</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '23/10/2026')"><span class="day-num">23</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '24/10/2026')"><span class="day-num">24</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">25</span></div>
 
-            <div class="date-box">
-                <span>25/08/2026</span>
-                <span class="calendar-icon">▣</span>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '26/10/2026')"><span class="day-num">26</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '27/10/2026')"><span class="day-num">27</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '28/10/2026')"><span class="day-num">28</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '29/10/2026')"><span class="day-num">29</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '30/10/2026')"><span class="day-num">30</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '31/10/2026')"><span class="day-num">31</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell other-month"><span class="day-num">1</span></div>
+                </div>
             </div>
 
-            <div class="navigation">
+            <!-- THÁNG 11/2026 -->
+            <div class="month-view">
+                <div class="calendar-grid">
+                    <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div><div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div><div class="day-header">CN</div>
+                    
+                    <div class="day-cell other-month"><span class="day-num">26</span></div>
+                    <div class="day-cell other-month"><span class="day-num">27</span></div>
+                    <div class="day-cell other-month"><span class="day-num">28</span></div>
+                    <div class="day-cell other-month"><span class="day-num">29</span></div>
+                    <div class="day-cell other-month"><span class="day-num">30</span></div>
+                    <div class="day-cell other-month"><span class="day-num">31</span></div>
+                    <div class="day-cell"><span class="day-num">1</span></div>
 
-                <button class="nav-button">
-                    ←
-                </button>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '02/11/2026')"><span class="day-num">2</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '03/11/2026')"><span class="day-num">3</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '04/11/2026')"><span class="day-num">4</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '05/11/2026')"><span class="day-num">5</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '06/11/2026')"><span class="day-num">6</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '07/11/2026')"><span class="day-num">7</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">8</span></div>
 
-                <button class="today-button">
-                    ▣ &nbsp; HIỆN TẠI
-                </button>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '09/11/2026')"><span class="day-num">9</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '10/11/2026')"><span class="day-num">10</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '11/11/2026')"><span class="day-num">11</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '12/11/2026')"><span class="day-num">12</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '13/11/2026')"><span class="day-num">13</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '14/11/2026')"><span class="day-num">14</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">15</span></div>
 
-                <button class="nav-button">
-                    →
-                </button>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '16/11/2026')"><span class="day-num">16</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '17/11/2026')"><span class="day-num">17</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '18/11/2026')"><span class="day-num">18</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '19/11/2026')"><span class="day-num">19</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '20/11/2026')"><span class="day-num">20</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '21/11/2026')"><span class="day-num">21</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">22</span></div>
 
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '23/11/2026')"><span class="day-num">23</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '24/11/2026')"><span class="day-num">24</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '25/11/2026')"><span class="day-num">25</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '26/11/2026')"><span class="day-num">26</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '27/11/2026')"><span class="day-num">27</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '28/11/2026')"><span class="day-num">28</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">29</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '30/11/2026')"><span class="day-num">30</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                </div>
             </div>
 
-        </div>
+            <!-- THÁNG 12/2026 -->
+            <div class="month-view">
+                <div class="calendar-grid">
+                    <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div><div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div><div class="day-header">CN</div>
+                    
+                    <div class="day-cell other-month"><span class="day-num">30</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '01/12/2026')"><span class="day-num">1</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '02/12/2026')"><span class="day-num">2</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '03/12/2026')"><span class="day-num">3</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '04/12/2026')"><span class="day-num">4</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '05/12/2026')"><span class="day-num">5</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">6</span></div>
 
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '07/12/2026')"><span class="day-num">7</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '08/12/2026')"><span class="day-num">8</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '09/12/2026')"><span class="day-num">9</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '10/12/2026')"><span class="day-num">10</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '11/12/2026')"><span class="day-num">11</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '12/12/2026')"><span class="day-num">12</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">13</span></div>
 
-        <!-- ================= THỜI KHÓA BIỂU ================= -->
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '14/12/2026')"><span class="day-num">14</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '15/12/2026')"><span class="day-num">15</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '16/12/2026')"><span class="day-num">16</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '17/12/2026')"><span class="day-num">17</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '18/12/2026')"><span class="day-num">18</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '19/12/2026')"><span class="day-num">19</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">20</span></div>
 
-        <div class="timetable">
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '21/12/2026')"><span class="day-num">21</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '22/12/2026')"><span class="day-num">22</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '23/12/2026')"><span class="day-num">23</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '24/12/2026')"><span class="day-num">24</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Sáu', '25/12/2026')"><span class="day-num">25</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Bảy', '26/12/2026')"><span class="day-num">26</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell"><span class="day-num">27</span></div>
 
-            <!-- ===== HEADER CỦA BẢNG ===== -->
-
-            <div class="table-header">
-
-                <div class="header-cell session-header">
-                    Ca học
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Hai', '28/12/2026')"><span class="day-num">28</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Ba', '29/12/2026')"><span class="day-num">29</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Tư', '30/12/2026')"><span class="day-num">30</span><span class="badge-subject badge-pink">02 Môn</span></div>
+                    <div class="day-cell" onclick="selectAndOpen(this, 'Thứ Năm', '31/12/2026')"><span class="day-num">31</span><span class="badge-subject badge-pink">02 Môn</span></div>
                 </div>
-
-                <div class="header-cell">
-                    <strong>Thứ 2</strong>
-                    <br>
-                    24/08/2026
-                </div>
-
-                <div class="header-cell current-day">
-                    <strong>Thứ 3</strong>
-                    <br>
-                    25/08/2026
-                </div>
-
-                <div class="header-cell">
-                    <strong>Thứ 4</strong>
-                    <br>
-                    26/08/2026
-                </div>
-
-                <div class="header-cell">
-                    <strong>Thứ 5</strong>
-                    <br>
-                    27/08/2026
-                </div>
-
-                <div class="header-cell">
-                    <strong>Thứ 6</strong>
-                    <br>
-                    28/08/2026
-                </div>
-
-                <div class="header-cell">
-                    <strong>Thứ 7</strong>
-                    <br>
-                    29/08/2026
-                </div>
-
-                <div class="header-cell">
-                    <strong>Chủ nhật</strong>
-                    <br>
-                    30/08/2026
-                </div>
-
-            </div>
-
-
-            <!-- ===== PHẦN LỊCH ===== -->
-
-            <div class="schedule-area">
-
-                <!-- CỘT SÁNG / CHIỀU / TỐI -->
-
-                <div class="period-column">
-
-                    <div class="period morning">
-                        Sáng
-                    </div>
-
-                    <div class="period afternoon">
-                        Chiều
-                    </div>
-
-                    <div class="period evening">
-                        Tối
-                    </div>
-
-                </div>
-
-
-                <!-- CỘT CA -->
-
-                <div class="class-column">
-
-                    <div class="class-name">
-                        Ca 1
-                    </div>
-
-                    <div class="class-name">
-                        Ca 2
-                    </div>
-
-                    <div class="class-name">
-                        Ca 3
-                    </div>
-
-                    <div class="class-name">
-                        Ca 4
-                    </div>
-
-                    <div class="class-name">
-                        Ca 5
-                    </div>
-
-                </div>
-
-
-                <!-- KHU VỰC CÁC NGÀY -->
-
-                <div class="days-area">
-
-                    <!-- ================= DÒNG 1 ================= -->
-
-                    <div class="schedule-row">
-
-                        <!-- Thứ 2 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 3 -->
-                        <div class="day-cell today-cell">
-
-                            <div class="subject web-programming">
-
-                                <div class="subject-title">
-                                    Lập trình Web
-                                </div>
-
-                                <div class="subject-code">
-                                    012012103104
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">▣</span>
-                                    <span>Tiết: 4 - 6</span>
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">◷</span>
-                                    <span>09:25 - 11:55</span>
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">▣</span>
-                                    <span>Phòng: ONLINE</span>
-                                </div>
-
-                                <div class="lms">
-                                    🎓 LMS
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <!-- Thứ 4 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 5 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 6 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 7 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Chủ nhật -->
-                        <div class="day-cell">
-                        </div>
-
-                    </div>
-
-
-                    <!-- ================= DÒNG 2 ================= -->
-
-                    <div class="schedule-row">
-
-                        <!-- Thứ 2 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 3 -->
-                        <div class="day-cell today-cell">
-                        </div>
-
-                        <!-- Thứ 4 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 5 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Thứ 6 -->
-                        <div class="day-cell">
-
-                            <div class="subject hcm-thought">
-
-                                <div class="subject-title">
-                                    Tư tưởng Hồ Chí Minh
-                                </div>
-
-                                <div class="subject-code">
-                                    012000510217
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">▣</span>
-                                    <span>Tiết: 7 - 9</span>
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">◷</span>
-                                    <span>12:10 - 14:40</span>
-                                </div>
-
-                                <div class="subject-info">
-                                    <span class="icon">▣</span>
-                                    <span>Phòng: Zoom10</span>
-                                </div>
-
-                                <div class="zoom-info">
-                                    ID: 99840487377
-                                </div>
-
-                                <div class="zoom-info">
-                                    Passcode: 204566
-                                </div>
-
-                                <button class="zoom-button">
-                                    🎥 &nbsp;Truy cập Zoom
-                                </button>
-
-                                <div class="lms">
-                                    🎓 LMS
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <!-- Thứ 7 -->
-                        <div class="day-cell">
-                        </div>
-
-                        <!-- Chủ nhật -->
-                        <div class="day-cell">
-                        </div>
-
-                    </div>
-
-
-                    <!-- ================= DÒNG 3 ================= -->
-
-                    <div class="schedule-row">
-
-                        <div class="day-cell"></div>
-                        <div class="day-cell today-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-
-                    </div>
-
-
-                    <!-- ================= DÒNG 4 ================= -->
-
-                    <div class="schedule-row">
-
-                        <div class="day-cell"></div>
-                        <div class="day-cell today-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-
-                    </div>
-
-
-                    <!-- ================= DÒNG 5 ================= -->
-
-                    <div class="schedule-row">
-
-                        <div class="day-cell"></div>
-                        <div class="day-cell today-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-                        <div class="day-cell"></div>
-
-                    </div>
-
-                </div>
-
             </div>
 
         </div>
+    </div>
 
-    </main>
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item"><span class="nav-icon">🏠</span><span>Trang chủ</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">🔄</span><span>Lịch tuần</span></a>
+        <a href="#" class="nav-item active"><span class="nav-icon">📅</span><span>Lịch tháng</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">👤</span><span>Cá nhân</span></a>
+    </div>
+
+    <div class="home-indicator"><div class="home-bar"></div></div>
+
+    <!-- Bottom Sheet Popup -->
+    <div class="modal-overlay" id="scheduleModal" onclick="closeSchedule(event)">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <div class="sheet-title" id="sheetTitle">Thứ Năm, 08/10/2026 (2 lịch học)</div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="timeline" id="timelineContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cập nhật toàn bộ các ca chiều về 13:30 - 17:30 và hệ thống phòng C001-C005, B101-B308
+    const scheduleData = {
+        'Thứ Hai': [
+            { title: 'Trí tuệ nhân tạo - 012000701022', timeBadge: '06:45', room: 'Phòng C002 (Tầng trệt tòa C)', time: '06:45 - 11:30 (Sáng)' },
+            { title: 'Máy học - 012000703015', timeBadge: '13:30', room: 'Phòng B305 (Lầu 3 tòa B)', time: '13:30 - 17:30 (Chiều)' }
+        ],
+        'Thứ Ba': [
+            { title: 'Chủ nghĩa xã hội khoa học - 012000101005', timeBadge: '09:25', room: 'Phòng C001 (Tầng trệt tòa C)', time: '09:25 - 11:55 (Sáng)' },
+            { title: 'Quản trị doanh nghiệp CNTT - 012000904008', timeBadge: '13:30', room: 'Phòng B102 (Lầu 1 tòa B)', time: '13:30 - 17:30 (Chiều)' }
+        ],
+        'Thứ Tư': [
+            { title: 'Trực quan hóa dữ liệu - 012000805002', timeBadge: '06:45', room: 'Phòng B108 (Lầu 1 tòa B)', time: '06:45 - 09:15 (Sáng)' },
+            { title: 'Khai thác dữ liệu - 012000802011', timeBadge: '13:30', room: 'Phòng C204 (Lầu 2 tòa C)', time: '13:30 - 17:30 (Chiều)' }
+        ],
+        'Thứ Năm': [
+            { title: 'Phân tích & Thiết kế HTTT - 012000501002', timeBadge: '09:25', room: 'Phòng C103 (Lầu 1 tòa C)', time: '09:25 - 11:55 (Sáng)' },
+            { title: 'Máy học (Thực hành) - 012000703016', timeBadge: '13:30', room: 'Phòng B302 (Lầu 3 tòa B)', time: '13:30 - 17:30 (Chiều)' }
+        ],
+        'Thứ Sáu': [
+            { title: 'Lập trình Python Nâng cao - 012000602010', timeBadge: '13:30', room: 'Phòng B206 (Lầu 2 tòa B)', time: '13:30 - 17:30 (Chiều)' },
+            { title: 'Trí tuệ nhân tạo (Thực hành) - 012000701023', timeBadge: '17:30', room: 'Phòng B208 (Lầu 2 tòa B)', time: '17:30 - 20:00 (Tối)' }
+        ],
+        'Thứ Bảy': [
+            { title: 'An toàn & Bảo mật hệ thống - 012000809001', timeBadge: '06:45', room: 'Phòng C301 (Lầu 3 tòa C)', time: '06:45 - 11:30 (Sáng)' },
+            { title: 'Bài tập Kỹ năng làm việc nhóm - ELEARN01', timeBadge: '22:40', room: 'Hệ thống LMS (Trực tuyến)', time: '22:40 (Tối)' }
+        ]
+    };
+
+    let currentMonthIndex = 0; // 0: T10, 1: T11, 2: T12
+    const monthNames = ["Tháng 10", "Tháng 11", "Tháng 12"];
+    const monthCounts = ["52 Buổi", "50 Buổi", "52 Buổi"];
+
+    function updateSlider() {
+        const slider = document.getElementById('calendarSlider');
+        slider.style.transform = `translateX(-${currentMonthIndex * 33.333}%)`;
+        document.getElementById('currentMonthText').innerText = monthNames[currentMonthIndex];
+        document.getElementById('totalMonthCount').innerText = monthCounts[currentMonthIndex];
+    }
+
+    function nextMonth() {
+        if (currentMonthIndex < 2) {
+            currentMonthIndex++;
+            updateSlider();
+        }
+    }
+
+    function prevMonth() {
+        if (currentMonthIndex > 0) {
+            currentMonthIndex--;
+            updateSlider();
+        }
+    }
+
+    // Xử lý Vuốt cảm ứng (Swipe)
+    let startX = 0;
+    const swipeArea = document.getElementById('swipeArea');
+
+    swipeArea.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+    }, false);
+
+    swipeArea.addEventListener('touchend', e => {
+        let endX = e.changedTouches[0].clientX;
+        let diffX = startX - endX;
+
+        if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                nextMonth();
+            } else {
+                prevMonth();
+            }
+        }
+    }, false);
+
+    function selectAndOpen(element, dayOfWeek, dateStr) {
+        document.querySelectorAll('.day-cell').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+
+        const classes = scheduleData[dayOfWeek] || [];
+        document.getElementById('selectedDayCount').innerText = `${classes.length < 10 ? '0' + classes.length : classes.length} Môn`;
+
+        openSchedule(dayOfWeek, dateStr, classes);
+    }
+
+    function openSchedule(dayOfWeek, dateStr, classes) {
+        const modal = document.getElementById('scheduleModal');
+        const sheetTitle = document.getElementById('sheetTitle');
+        const timelineContent = document.getElementById('timelineContent');
+
+        sheetTitle.innerText = `${dayOfWeek}, ${dateStr} (${classes.length} lịch học)`;
+
+        if (classes.length === 0) {
+            timelineContent.innerHTML = '<p style="color:#888; font-size:12px; text-align:center; padding:20px;">Không có lịch học trong ngày này.</p>';
+        } else {
+            let html = '';
+            classes.forEach(item => {
+                html += `
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="subject-header-row">
+                            <div class="subject-title">${item.title}</div>
+                            <div class="subject-time-badge">${item.timeBadge}</div>
+                        </div>
+                        <div class="subject-detail">
+                            <p><strong>Địa điểm / Hình thức:</strong> ${item.room}</p>
+                            <p><strong>Thời gian:</strong> ${item.time}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            timelineContent.innerHTML = html;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('scheduleModal').style.display = 'none'; }
+    function closeSchedule(event) { if (event.target.id === 'scheduleModal') closeModal(); }
+</script>
 
 </body>
 </html>
